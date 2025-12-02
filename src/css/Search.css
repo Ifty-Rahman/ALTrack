@@ -14,7 +14,7 @@
 }
 
 .search-results .content-card img {
-    max-height: 300px;
+    height: 300px;
 }
 
 @media (max-width: 768px) {
