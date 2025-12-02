@@ -9,13 +9,20 @@
 
 .search-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
+}
+
+.search-results .content-card img {
+    max-height: 300px;
 }
 
 @media (max-width: 768px) {
     .search-results {
         padding: 0 20px 10px;
+    }
+    .search-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 }
 
