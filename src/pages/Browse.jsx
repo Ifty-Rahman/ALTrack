@@ -32,7 +32,7 @@ function Browse() {
   const { query, variables } = getQueryAndVars(section, page, perPage);
   const { loading, error, data } = useQuery(query, {
     variables,
-    fetchPolicy: "cache-first",
+    fetchPolicy: "network-only",
   });
 
   const handlePageChange = (event, value) => {
