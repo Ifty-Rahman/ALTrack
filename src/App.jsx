@@ -31,10 +31,12 @@ const loginUrl = `https://anilist.co/api/v2/oauth/authorize?client_id=${import.m
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("anilist_token");
   return {
-    headers: {
-      ...headers,
-      Authorization: token ? `Bearer ${token}` : "",
-    },
+    headers: token
+      ? {
+          ...headers,
+          Authorization: `Bearer ${token}`,
+        }
+      : headers,
   };
 });
 

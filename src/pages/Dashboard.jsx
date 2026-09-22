@@ -80,9 +80,9 @@ function Dashboard() {
     );
   if (error)
     return toast.error(
-      error.status.includes(429)
+      String(error?.message || "").includes("429") || error?.status?.includes(429)
         ? "API limit reached. Please try again 1 minute later."
-        : `${error.message}, try again later`,
+        : `${error?.message || "Error occurred"}, try again later`,
     );
 
   const entries = data?.MediaListCollection?.lists?.[0]?.entries || [];

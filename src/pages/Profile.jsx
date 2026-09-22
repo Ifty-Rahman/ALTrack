@@ -43,7 +43,7 @@ function ProfilePage() {
   if (userError) return <p>Error: {userError.message}</p>;
   if (error)
     return toast.error(
-      error.status.includes(429)
+      error?.status?.includes(429)
         ? "API limit reached. Please try again 1 minute later."
         : `${error.message}, try again later`,
     );

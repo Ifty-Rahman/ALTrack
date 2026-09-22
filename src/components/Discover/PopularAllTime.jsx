@@ -19,7 +19,7 @@ function PopularAllTime({ type }) {
   const [popularMedia, setPopularMedia] = useState([]);
 
   useEffect(() => {
-    if (data) {
+    if (data?.Page?.media) {
       setPopularMedia(data.Page.media);
     }
   }, [data]);
@@ -38,9 +38,9 @@ function PopularAllTime({ type }) {
 
   if (error)
     return toast.error(
-      error.status.includes(429)
+      error?.message?.includes("429") || error?.graphQLErrors?.some(e => e.extensions?.code === "RATE_LIMITED")
         ? "API limit reached. Please try again 1 minute later."
-        : `${error.message}, try again later`,
+        : `${error.message || "Error occurred"}, try again later`,
     );
   if (loading) return;
 

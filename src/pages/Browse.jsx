@@ -48,9 +48,9 @@ function Browse() {
     );
   if (error)
     return toast.error(
-      error.message.includes("429")
+      String(error?.message || "").includes("429")
         ? "API limit reached. Please try again later."
-        : error.message,
+        : error?.message || "Error occurred",
     );
 
   const anime = data?.Page?.media || [];

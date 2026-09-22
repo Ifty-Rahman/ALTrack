@@ -28,7 +28,7 @@ function PopularThisSeason({ type }) {
   const [popular_seasonal_anime, setPopularSeasonalAnime] = useState([]);
 
   useEffect(() => {
-    if (data) {
+    if (data?.Page?.media) {
       setPopularSeasonalAnime(data.Page.media);
     }
   }, [data]);
@@ -47,9 +47,9 @@ function PopularThisSeason({ type }) {
 
   if (error)
     return toast.error(
-      error.status.includes(429)
+      error?.message?.includes("429") || error?.graphQLErrors?.some(e => e.extensions?.code === "RATE_LIMITED")
         ? "API limit reached. Please try again 1 minute later."
-        : `${error.message}, try again later`,
+        : `${error.message || "Error occurred"}, try again later`,
     );
   if (loading) return;
 
