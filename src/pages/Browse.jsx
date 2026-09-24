@@ -13,6 +13,7 @@ import {
   GET_TRENDING_ANIMANGA,
   GET_POPULAR_MANHWA,
 } from "../services/Queries.jsx";
+import { isRateLimitError } from "../services/RateLimit.js";
 import "../css/Browse.css";
 
 function Browse() {
@@ -32,7 +33,7 @@ function Browse() {
   const { query, variables } = getQueryAndVars(section, page, perPage);
   const { loading, error, data } = useQuery(query, {
     variables,
-    fetchPolicy: "network-only",
+    fetchPolicy: "cache-first",
   });
 
   const handlePageChange = (event, value) => {
@@ -46,12 +47,10 @@ function Browse() {
         <TrophySpin color="var(--primary)" size="large" />
       </div>
     );
-  if (error)
-    return toast.error(
-      String(error?.message || "").includes("429")
-        ? "API limit reached. Please try again later."
-        : error?.message || "Error occurred",
-    );
+  if (error) {
+    if (isRateLimitError(error)) return null;
+    return toast.error(error?.message || "Failed to load");
+  }
 
   const anime = data?.Page?.media || [];
   const pageInfo = data?.Page?.pageInfo;

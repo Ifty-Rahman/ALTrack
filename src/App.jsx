@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client/react";
 import { setContext } from "@apollo/client/link/context";
+import { rateLimitLink } from "./services/RateLimit.js";
+import { smartRequestLink } from "./services/SmartRequestLink.js";
+import { createPersistenceLink, hydrateCache } from "./services/CachePersistence.js";
+import RateLimitOverlay from "./components/RateLimitOverlay.jsx";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -40,13 +44,20 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const clientCache = new InMemoryCache({
+  typePolicies: {
+    Page: { keyFields: false },
+  },
+});
+hydrateCache(clientCache);
+
 const client = new ApolloClient({
-  link: authLink.concat(new HttpLink({ uri: "https://graphql.anilist.co" })),
-  cache: new InMemoryCache({
-    typePolicies: {
-      Page: { keyFields: false },
-    },
-  }),
+  link: authLink
+    .concat(rateLimitLink)
+    .concat(smartRequestLink)
+    .concat(createPersistenceLink(clientCache))
+    .concat(new HttpLink({ uri: "https://graphql.anilist.co" })),
+  cache: clientCache,
 });
 
 function DockWrapper() {
@@ -149,6 +160,7 @@ function App() {
             <Route path="/Details" element={<Details />} />
           </Routes>
           <DockWrapper />
+          <RateLimitOverlay />
         </ApolloProvider>
       </main>
       <ToastContainer
