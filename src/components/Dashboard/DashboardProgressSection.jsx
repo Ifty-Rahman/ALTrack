@@ -5,6 +5,7 @@ import {
   UPDATE_ANIME_ENTRY,
   UPDATE_MANGA_ENTRY,
 } from "../../services/Mutation.jsx";
+import { isRateLimitError } from "../../services/RateLimit.js";
 
 const FIELD_TYPES = {
   EPISODE: "EPISODE",
@@ -46,11 +47,8 @@ function DashboardProgressSection({ entry, mediaType }) {
           },
         });
       } catch (err) {
-        toast.error(
-          err.message.includes("429")
-            ? "API limit reached. Please try again later."
-            : "Failed to update progress.",
-        );
+        if (isRateLimitError(err)) return;
+        toast.error("Failed to update progress.");
       }
     } else {
       if (isVolume) {
@@ -74,11 +72,8 @@ function DashboardProgressSection({ entry, mediaType }) {
             },
           });
         } catch (err) {
-          toast.error(
-            err.message.includes("429")
-              ? "API limit reached. Please try again later."
-              : "Failed to update volumes.",
-          );
+          if (isRateLimitError(err)) return;
+          toast.error("Failed to update volumes.");
         }
       } else {
         const newProgress = entry.progress + delta;
@@ -101,11 +96,8 @@ function DashboardProgressSection({ entry, mediaType }) {
             },
           });
         } catch (err) {
-          toast.error(
-            err.message.includes("429")
-              ? "API limit reached. Please try again later."
-              : "Failed to update chapters.",
-          );
+          if (isRateLimitError(err)) return;
+          toast.error("Failed to update chapters.");
         }
       }
     }
@@ -225,11 +217,8 @@ function DashboardProgressSection({ entry, mediaType }) {
       );
       handleCancelEdit();
     } catch (err) {
-      toast.error(
-        err.message.includes("429")
-          ? "API limit reached. Please try again later."
-          : `Failed to update ${label}s.`,
-      );
+      if (isRateLimitError(err)) return;
+      toast.error(`Failed to update ${label}s.`);
     }
   };
 

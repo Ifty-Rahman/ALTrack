@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
+import { isRateLimitError } from "../../services/RateLimit.js";
 import { MdOutlineEdit } from "react-icons/md";
 
 function getScoreDisplay(entry, scoreFormat) {
@@ -92,6 +93,7 @@ function DashboardScoreSection({
       setIsEditing(false);
     } catch (err) {
       console.error(err);
+      if (isRateLimitError(err)) return;
       toast.error("Failed to update score.");
     }
   };

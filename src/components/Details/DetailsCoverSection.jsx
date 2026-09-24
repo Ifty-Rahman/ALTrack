@@ -18,6 +18,7 @@ import {
   TOGGLE_FAVOURITE,
   DELETE_MEDIA_LIST_ENTRY,
 } from "../../services/Mutation.jsx";
+import { isRateLimitError } from "../../services/RateLimit.js";
 import { LIST_STATUSES, formatStatus } from "../../utils/detailsHelpers.js";
 
 function DetailsCoverSection({ media, type, mediaId, onMediaRefetch }) {
@@ -168,6 +169,7 @@ function DetailsCoverSection({ media, type, mediaId, onMediaRefetch }) {
 
       await performRefetches();
     } catch (err) {
+      if (isRateLimitError(err)) return;
       toast.error("Unable to remove from the list right now.");
       console.error(err);
     } finally {
@@ -217,6 +219,7 @@ function DetailsCoverSection({ media, type, mediaId, onMediaRefetch }) {
 
         await performRefetches();
       } catch (err) {
+        if (isRateLimitError(err)) return;
         toast.error("Unable to update the list right now.");
         console.error(err);
       } finally {
@@ -262,6 +265,7 @@ function DetailsCoverSection({ media, type, mediaId, onMediaRefetch }) {
         );
       }
     } catch (err) {
+      if (isRateLimitError(err)) return;
       toast.error("Unable to update favourites right now.");
       console.error(err);
     }

@@ -7,6 +7,7 @@ import {
   GET_NOTIFICATIONS,
   GET_UNREAD_NOTIFICATION_COUNT,
 } from "../services/Queries";
+import { isRateLimitError } from "../services/RateLimit.js";
 import "../css/Notifications.css";
 import { useAuth } from "../contexts/AuthContext.js";
 
@@ -332,8 +333,10 @@ function Notifications() {
     try {
       const Page = await fetchPage(1, true);
       applyPage(Page);
-    } catch {
-      setFetchError("Failed to load notifications");
+    } catch (err) {
+      if (!isRateLimitError(err)) {
+        setFetchError("Failed to load notifications");
+      }
       setUnreadCount(0);
     } finally {
       setLoading(false);
@@ -359,8 +362,9 @@ function Notifications() {
         if (cancelled) return;
         applyPage(Page);
       })
-      .catch(() => {
-        if (!cancelled) setFetchError("Failed to load notifications");
+      .catch((err) => {
+        if (!cancelled && !isRateLimitError(err))
+          setFetchError("Failed to load notifications");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

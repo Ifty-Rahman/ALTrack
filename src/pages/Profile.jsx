@@ -9,6 +9,7 @@ import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import { TrophySpin } from "react-loading-indicators";
 import { toast } from "react-toastify";
+import { isRateLimitError } from "../services/RateLimit.js";
 
 function ProfilePage() {
   const { authToken } = useAuth();
@@ -41,12 +42,10 @@ function ProfilePage() {
       </div>
     );
   if (userError) return <p>Error: {userError.message}</p>;
-  if (error)
-    return toast.error(
-      error?.status?.includes(429)
-        ? "API limit reached. Please try again 1 minute later."
-        : `${error.message}, try again later`,
-    );
+  if (error) {
+    if (isRateLimitError(error)) return null;
+    return toast.error(`${error?.message || "Error occurred"}, try again later`);
+  }
 
   return (
     <div className="profile-main">
