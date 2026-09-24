@@ -460,15 +460,6 @@ export const GET_CURRENT_MEDIA = gql`
   }
 `;
 
-export const GET_USER_MEDIA_STATUS = gql`
-  query GetUserMediaStatus($userId: Int, $mediaId: Int) {
-    MediaList(userId: $userId, mediaId: $mediaId) {
-      id
-      status
-    }
-  }
-`;
-
 export const GET_SEARCH_DATA = gql`
   query ($search: String, $page: Int, $perPage: Int, $type: MediaType) {
     Page(page: $page, perPage: $perPage) {
@@ -514,6 +505,11 @@ export const GET_MEDIA_DETAILS = gql`
       meanScore
       popularity
       favourites
+      isFavourite
+      mediaListEntry {
+        id
+        status
+      }
       season
       seasonYear
       startDate {
