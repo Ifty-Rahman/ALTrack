@@ -44,7 +44,7 @@ const client = new ApolloClient({
   link: authLink.concat(new HttpLink({ uri: "https://graphql.anilist.co" })),
   cache: new InMemoryCache({
     typePolicies: {
-      Page: { keyFields: [] },
+      Page: { keyFields: false },
     },
   }),
 });

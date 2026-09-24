@@ -531,8 +531,21 @@ export const GET_MEDIA_DETAILS = gql`
   }
 `;
 
+export const GET_UNREAD_NOTIFICATION_COUNT = gql`
+  query {
+    Viewer {
+      unreadNotificationCount
+    }
+  }
+`;
+
 export const GET_NOTIFICATIONS = gql`
-  query ($page: Int, $perPage: Int) {
+  query (
+    $page: Int
+    $perPage: Int
+    $type_in: [NotificationType]
+    $resetNotificationCount: Boolean
+  ) {
     Page(page: $page, perPage: $perPage) {
       pageInfo {
         total
@@ -541,17 +554,335 @@ export const GET_NOTIFICATIONS = gql`
         hasNextPage
         perPage
       }
-      notifications {
+      notifications(
+        type_in: $type_in
+        resetNotificationCount: $resetNotificationCount
+      ) {
         __typename
         ... on AiringNotification {
           id
           type
           episode
           contexts
+          createdAt
           media {
             id
+            type
             title {
               romaji
+              english
+            }
+            coverImage {
+              large
+            }
+          }
+        }
+        ... on FollowingNotification {
+          id
+          type
+          context
+          createdAt
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ActivityMessageNotification {
+          id
+          type
+          context
+          createdAt
+          message {
+            id
+            message
+          }
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ActivityMentionNotification {
+          id
+          type
+          context
+          createdAt
+          activityId
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ActivityReplyNotification {
+          id
+          type
+          context
+          createdAt
+          activityId
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ActivityReplySubscribedNotification {
+          id
+          type
+          context
+          createdAt
+          activityId
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ActivityLikeNotification {
+          id
+          type
+          context
+          createdAt
+          activityId
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ActivityReplyLikeNotification {
+          id
+          type
+          context
+          createdAt
+          activityId
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ThreadCommentMentionNotification {
+          id
+          type
+          context
+          createdAt
+          thread {
+            id
+            title
+          }
+          comment {
+            id
+          }
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ThreadCommentReplyNotification {
+          id
+          type
+          context
+          createdAt
+          thread {
+            id
+            title
+          }
+          comment {
+            id
+          }
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ThreadCommentSubscribedNotification {
+          id
+          type
+          context
+          createdAt
+          thread {
+            id
+            title
+          }
+          comment {
+            id
+          }
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ThreadCommentLikeNotification {
+          id
+          type
+          context
+          createdAt
+          thread {
+            id
+            title
+          }
+          comment {
+            id
+          }
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on ThreadLikeNotification {
+          id
+          type
+          context
+          createdAt
+          thread {
+            id
+            title
+          }
+          user {
+            id
+            name
+            avatar {
+              large
+            }
+          }
+        }
+        ... on RelatedMediaAdditionNotification {
+          id
+          type
+          context
+          createdAt
+          media {
+            id
+            type
+            title {
+              romaji
+              english
+            }
+            coverImage {
+              large
+            }
+          }
+        }
+        ... on MediaDataChangeNotification {
+          id
+          type
+          context
+          reason
+          createdAt
+          media {
+            id
+            type
+            title {
+              romaji
+              english
+            }
+            coverImage {
+              large
+            }
+          }
+        }
+        ... on MediaMergeNotification {
+          id
+          type
+          context
+          reason
+          createdAt
+          media {
+            id
+            type
+            title {
+              romaji
+              english
+            }
+            coverImage {
+              large
+            }
+          }
+        }
+        ... on MediaDeletionNotification {
+          id
+          type
+          context
+          reason
+          createdAt
+          deletedMediaTitle
+        }
+        ... on MediaSubmissionUpdateNotification {
+          id
+          type
+          contexts
+          status
+          createdAt
+          media {
+            id
+            type
+            title {
+              romaji
+              english
+            }
+            coverImage {
+              large
+            }
+          }
+          submittedTitle
+        }
+        ... on StaffSubmissionUpdateNotification {
+          id
+          type
+          contexts
+          status
+          createdAt
+          staff {
+            id
+            name {
+              full
+            }
+            image {
+              large
+            }
+          }
+        }
+        ... on CharacterSubmissionUpdateNotification {
+          id
+          type
+          contexts
+          status
+          createdAt
+          character {
+            id
+            name {
+              full
+            }
+            image {
+              large
             }
           }
         }
