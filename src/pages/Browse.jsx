@@ -1,6 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import { useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Pagination, useMediaQuery } from "@mui/material";
 import ContentCard from "../components/Contentcard.jsx";
@@ -16,19 +16,52 @@ import {
 import { isRateLimitError } from "../services/RateLimit.js";
 import "../css/Browse.css";
 
+const MIN_CARD = 170;
+const ROWS_PER_PAGE = 6;
+
+// Mirrors the CSS auto-fill track math so perPage always fills complete rows.
+function getColumnsForWidth(width) {
+  if (width <= 480) return 2;
+  const gap = width <= 768 ? 15 : 20;
+  const gridWidth = width - 40; // .browse-container padding
+  return Math.max(1, Math.floor((gridWidth + gap) / (MIN_CARD + gap)));
+}
+
 function Browse() {
-  const isTablet = useMediaQuery("(max-width: 1440px)");
   const isMobile = useMediaQuery("(max-width: 480px)");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const section = searchParams.get("section") || "trending";
   const type = searchParams.get("type") || "ANIME";
   const [page, setPage] = useState(1);
-  const perPage = isTablet ? 28 : 50;
+  const browseGridRef = useRef(null);
+  const [columns, setColumns] = useState(() =>
+    getColumnsForWidth(window.innerWidth),
+  );
 
   useEffect(() => {
     setPage(1);
   }, [section]);
+
+  useEffect(() => {
+    const node = browseGridRef.current;
+    if (!node) return;
+    const updateColumns = () => {
+      const width = node.getBoundingClientRect().width;
+      const gap = window.innerWidth <= 768 ? 15 : 20;
+      const next =
+        window.innerWidth <= 480
+          ? 2
+          : Math.max(1, Math.floor((width + gap) / (MIN_CARD + gap)));
+      setColumns((prev) => (prev === next ? prev : next));
+    };
+    updateColumns();
+    const resizeObserver = new ResizeObserver(updateColumns);
+    resizeObserver.observe(node);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const perPage = columns * ROWS_PER_PAGE;
 
   const { query, variables } = getQueryAndVars(section, page, perPage);
   const { loading, error, data } = useQuery(query, {
@@ -145,7 +178,7 @@ function Browse() {
         </p>
       </div>
 
-      <div className="browse-grid">
+      <div className="browse-grid" ref={browseGridRef}>
         {anime.map((content) => (
           <div key={content.id} onClick={() => handleCardClick(content)}>
             <ContentCard content={content} />
