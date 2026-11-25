@@ -8,8 +8,10 @@ import { GET_CURRENT_USER, GET_USER_STATISTICS } from "../services/Queries.jsx";
 import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import { TrophySpin } from "react-loading-indicators";
-import { toast } from "react-toastify";
 import { isRateLimitError } from "../services/RateLimit.js";
+import { getApiErrorMessage } from "../utils/errorHandling.js";
+import PageState from "../components/PageState.jsx";
+import SignedOutState from "../components/SignedOutState.jsx";
 
 function ProfilePage() {
   const { authToken } = useAuth();
@@ -18,6 +20,7 @@ function ProfilePage() {
     loading: userLoading,
     error: userError,
     data: userData,
+    refetch: refetchUser,
   } = useQuery(GET_CURRENT_USER, {
     fetchPolicy: "cache-first",
     skip: !authToken,
@@ -26,7 +29,7 @@ function ProfilePage() {
   const user = userData?.Viewer;
   const username = user?.name;
 
-  const { loading, error, data } = useQuery(GET_USER_STATISTICS, {
+  const { loading, error, data, refetch } = useQuery(GET_USER_STATISTICS, {
     variables: { userName: username },
     skip: !authToken || !username,
     fetchPolicy: "cache-first",
@@ -35,32 +38,42 @@ function ProfilePage() {
   const stats = useMemo(() => data?.Viewer?.statistics, [data]);
   const favourites = useMemo(() => data?.Viewer?.favourites, [data]);
 
-  if (userLoading || loading)
+  if (!authToken) {
+    return <SignedOutState message="Log in with your AniList account to see your stats and favourites." />;
+  }
+
+  const activeError = userError || error;
+  const isRateLimited = isRateLimitError(activeError);
+
+  // While rate limited the overlay is up and refetches when it clears.
+  if (userLoading || loading || (isRateLimited && !user))
     return (
       <div className="loading-indicator">
         <TrophySpin color="var(--primary)" size="large" />
       </div>
     );
-  if (userError) return <p>Error: {userError.message}</p>;
-  if (error) {
-    if (isRateLimitError(error)) return null;
-    return toast.error(`${error?.message || "Error occurred"}, try again later`);
+
+  if (activeError && !isRateLimited) {
+    return (
+      <div className="profile-main">
+        <PageState
+          role="alert"
+          title="Couldn't load your profile"
+          message={getApiErrorMessage(activeError, "Please try again in a moment.")}
+          actions={[{ label: "Try again", onClick: () => (userError ? refetchUser() : refetch()) }]}
+        />
+      </div>
+    );
   }
 
   return (
     <div className="profile-main">
-      {authToken ? (
-        <div className="profile-container">
-          <ProfileMedia user={user} />
-          <UserStats stats={stats} />
-          <Favorites favourites={favourites} />
-          <LogOut />
-        </div>
-      ) : (
-        <div className="Not-Logged-In">
-          <p>Please log in to see your profile</p>
-        </div>
-      )}
+      <div className="profile-container">
+        <ProfileMedia user={user} />
+        <UserStats stats={stats} />
+        <Favorites favourites={favourites} />
+        <LogOut />
+      </div>
     </div>
   );
 }

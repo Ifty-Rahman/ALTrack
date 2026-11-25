@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { PiHandTapBold } from "react-icons/pi";
 import "../css/NavBar.css";
@@ -13,6 +13,15 @@ function NavBar() {
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
+  const location = useLocation();
+
+  // Keep the search bar in step with the Search page URL (back/forward, "search manga instead").
+  useEffect(() => {
+    if (location.pathname !== "/Search") return;
+    const params = new URLSearchParams(location.search);
+    setSearchQuery(params.get("query") ?? "");
+    setSearchType(params.get("type")?.toUpperCase() === "MANGA" ? "Manga" : "Anime");
+  }, [location.pathname, location.search]);
 
   // Check if mobile
   useEffect(() => {
@@ -91,12 +100,14 @@ function NavBar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={`Search ${searchType}...`}
                 className="search-input"
+                aria-label={`Search ${searchType}`}
               />
               {searchQuery && (
                 <button
                   type="button"
                   className="clear-btn-mobile"
                   onClick={clearSearch}
+                  aria-label="Clear search"
                 >
                   ✕
                 </button>
@@ -105,6 +116,7 @@ function NavBar() {
                 type="button"
                 className={`search-type-toggle search-type-toggle--${searchType}`}
                 onClick={toggleSearchType}
+                aria-label={`Searching ${searchType}. Switch to ${searchType === "Anime" ? "Manga" : "Anime"}`}
               >
                 {searchType === "Anime" ? "Anime" : "Manga"}
                 <PiHandTapBold size={15} />
@@ -131,12 +143,14 @@ function NavBar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={`Search ${searchType}...`}
                   className="search-input-mobile"
+                  aria-label={`Search ${searchType}`}
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     className="clear-btn-mobile"
                     onClick={clearSearch}
+                    aria-label="Clear search"
                   >
                     ✕
                   </button>
@@ -161,7 +175,12 @@ function NavBar() {
 
       <div className="settings">
         {isMobile && !isSearchOpen && (
-          <button className="search-trigger-mobile" onClick={openSearch}>
+          <button
+            type="button"
+            className="search-trigger-mobile"
+            onClick={openSearch}
+            aria-label="Open search"
+          >
             <IoSearchSharp
               color="var(--text)"
               className="search-icon"

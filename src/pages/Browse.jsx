@@ -3,20 +3,17 @@ import { useQuery } from "@apollo/client/react";
 import { Link, useNavigationType, useSearchParams } from "react-router-dom";
 import { Pagination, useMediaQuery } from "@mui/material";
 import { MdArrowBack } from "react-icons/md";
-import MediaCardLink, { MediaCardSkeleton } from "../components/MediaCardLink.jsx";
-import DiscoverTypeToggle from "../components/Discover/DiscoverTypeToggle.jsx";
-import DiscoverErrorState from "../components/Discover/DiscoverErrorState.jsx";
+import MediaCardLink from "../components/MediaCardLink.jsx";
+import PageLoader from "../components/PageLoader.jsx";
+import PageState from "../components/PageState.jsx";
 import { isRateLimitError } from "../services/RateLimit.js";
 import { getApiErrorMessage } from "../utils/errorHandling.js";
 import {
   getBrowseQuery,
-  getBrowseUrl,
   getSection,
   getSectionSubtitle,
-  getSectionsForType,
   normalizeType,
 } from "../utils/discoverSections.js";
-import "../css/Discover.css";
 import "../css/Browse.css";
 
 const MIN_CARD = 170;
@@ -98,7 +95,7 @@ function Browse() {
   const pageInfo = visibleData?.Page?.pageInfo;
   const isRateLimited = isRateLimitError(error);
   const hardError = error && !isRateLimited;
-  const showSkeleton = !visibleData && !hardError;
+  const showLoader = !visibleData && !hardError;
   const isRefreshing = Boolean(visibleData) && (loading || isRateLimited) && !data;
 
   // AniList's lastPage is an estimate; trust hasNextPage near the end.
@@ -114,10 +111,6 @@ function Browse() {
     setSearchParams(params);
   };
 
-  const handleTypeChange = (nextType) => {
-    goTo(getSection(section.key, nextType).key, nextType);
-  };
-
   const subtitle = getSectionSubtitle(section);
   const typeLabel = type === "ANIME" ? "Anime" : "Manga";
 
@@ -131,7 +124,7 @@ function Browse() {
         <div className="browse-heading">
           <h1 className="browse-title">{section.title}</h1>
           <p className="browse-subtitle">
-            {[subtitle, typeLabel].filter(Boolean).join(" · ")}
+            {subtitle ? `${subtitle} ${typeLabel.toLowerCase()}` : typeLabel}
             {pageInfo && media.length > 0 && (
               <span className="browse-page-count">
                 Page {page} of {lastPage}
@@ -141,56 +134,42 @@ function Browse() {
         </div>
       </div>
 
-      <div className="browse-toolbar">
-        <DiscoverTypeToggle value={type} onChange={handleTypeChange} />
-        <nav className="browse-tabs" aria-label="Lists">
-          {getSectionsForType(type).map((tab) => (
-            <Link
-              key={tab.key}
-              to={getBrowseUrl(tab.key, type)}
-              className={`browse-tab${tab.key === section.key ? " is-active" : ""}`}
-              aria-current={tab.key === section.key ? "page" : undefined}
-            >
-              {tab.title}
-            </Link>
-          ))}
-        </nav>
-      </div>
-
       {hardError && (
-        <DiscoverErrorState
+        <PageState
+          role="alert"
+          title="Couldn't load this list"
           message={getApiErrorMessage(error, "Please try again in a moment.")}
-          onRetry={() => refetch()}
+          actions={[{ label: "Try again", onClick: () => refetch() }]}
         />
       )}
 
       <div
         className={`browse-grid${isRefreshing ? " is-refreshing" : ""}`}
         ref={gridRef}
-        aria-busy={showSkeleton || isRefreshing}
+        aria-busy={isRefreshing}
         hidden={Boolean(hardError)}
       >
-        {showSkeleton
-          ? Array.from({ length: perPage }, (_, index) => <MediaCardSkeleton key={index} />)
-          : media.map((content) => <MediaCardLink key={content.id} content={content} />)}
+        {media.map((content) => (
+          <MediaCardLink key={content.id} content={content} />
+        ))}
       </div>
 
-      {!showSkeleton && !hardError && media.length === 0 && (
-        <div className="discover-state">
-          <p className="discover-state__title">Nothing here</p>
-          <p className="discover-state__message">
-            {page > 1 ? "You've reached the end of this list." : "No titles found for this list yet."}
-          </p>
-          {page > 1 && (
-            <button
-              type="button"
-              className="discover-state__action"
-              onClick={() => goTo(section.key, type, 1)}
-            >
-              Back to first page
-            </button>
-          )}
-        </div>
+      {showLoader && <PageLoader inline />}
+
+      {!showLoader && !hardError && media.length === 0 && (
+        <PageState
+          title={page > 1 ? "You've reached the end" : "Nothing here yet"}
+          message={
+            page > 1
+              ? "There are no more titles in this list."
+              : "AniList has no titles in this list right now."
+          }
+          actions={
+            page > 1
+              ? [{ label: "Back to first page", onClick: () => goTo(section.key, type, 1) }]
+              : []
+          }
+        />
       )}
 
       {media.length > 0 && lastPage > 1 && (

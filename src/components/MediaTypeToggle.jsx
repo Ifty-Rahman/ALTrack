@@ -1,7 +1,7 @@
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { MEDIA_TYPES } from "../../utils/discoverSections.js";
+import { MEDIA_TYPES } from "../utils/discoverSections.js";
 
-function DiscoverTypeToggle({ value, onChange }) {
+function MediaTypeToggle({ value, onChange }) {
   return (
     <ToggleButtonGroup
       className="toggle-group"
@@ -19,4 +19,4 @@ function DiscoverTypeToggle({ value, onChange }) {
   );
 }
 
-export default DiscoverTypeToggle;
+export default MediaTypeToggle;

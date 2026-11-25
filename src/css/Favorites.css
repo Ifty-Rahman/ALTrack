@@ -63,7 +63,16 @@
     min-height: 170px;
 }
 
-.favorite-card:hover {
+.favorite-card--link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.favorite-card--link:hover {
+    background: rgba(4, 107, 217, 0.15);
+}
+
+.favorite-card--link:hover {
     transform: translateY(-3px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }

@@ -11,38 +11,6 @@
     padding-top: 4px;
 }
 
-.toggle-group {
-    border-radius: 12px;
-    padding: 6px;
-    gap: 6px;
-}
-
-.toggle-group .MuiToggleButton-root {
-    color: var(--text-secondary) !important; /* Unselected text */
-    background-color: var(--transparent) !important;
-    border: none !important;
-    font-weight: 500;
-    text-transform: none;
-    padding: 6px 16px;
-    transition: all 0.2s ease;
-    border-radius: 20px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.toggle-group .MuiToggleButton-root.Mui-selected {
-    color: var(--text) !important;
-    background-color: var(--primary) !important;
-    font-weight: 600;
-}
-
-.toggle-group .MuiToggleButton-root:hover {
-    background-color: rgba(60, 57, 57, 0.7) !important;
-}
-
-.toggle-group .MuiToggleButton-root.Mui-selected:hover {
-    background-color: var(--hover) !important;
-}
-
 /* Row */
 
 .discover-row__header {
@@ -205,48 +173,6 @@
 .discover-row__viewport.can-scroll-left::before,
 .discover-row__viewport.can-scroll-right::after {
     opacity: 0.85;
-}
-
-/* Empty / error state */
-
-.discover-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    margin: 40px auto;
-    padding: 28px 24px;
-    max-width: 420px;
-    text-align: center;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: var(--transparent);
-}
-
-.discover-state__title {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-
-.discover-state__message {
-    margin: 0;
-    color: var(--text-secondary);
-}
-
-.discover-state__action {
-    margin-top: 8px;
-    padding: 8px 20px;
-    border-radius: 20px;
-    background: var(--primary);
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.discover-state__action:hover {
-    color: var(--text);
-    background: var(--hover);
 }
 
 /* Shared button base (also used by other pages). */

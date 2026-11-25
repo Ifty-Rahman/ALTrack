@@ -3,8 +3,11 @@
 }
 
 .search-title {
-    font-size: 1.2rem;
-    font-weight: 400;
+    margin: 8px 0 20px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
 }
 
 .search-grid {
@@ -21,8 +24,12 @@
     .search-results {
         padding: 0 20px 10px;
     }
+    .search-title {
+        font-size: 1.2rem;
+    }
     .search-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 15px;
     }
 }
 
@@ -30,18 +37,16 @@
     .search-results {
         padding: 0 20px 5px;
     }
-
     .search-grid {
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
     .search-results .content-card img {
-        max-height: 260px;
+        height: 260px;
     }
 }
 
 @media (max-width: 410px) {
-    .search-grid {
-        grid-template-columns: repeat(2, minmax(150px, 1fr));
+    .search-results .content-card img {
+        height: 230px;
     }
 }

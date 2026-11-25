@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "../../css/Favorites.css";
 
 function Favorites({ favourites }) {
@@ -10,6 +11,7 @@ function Favorites({ favourites }) {
       nodes: favourites.anime?.nodes ?? [],
       getImage: (node) => node.coverImage?.large,
       getTitle: (node) => node.title?.english || node.title?.romaji,
+      getLink: (node) => `/Details?id=${node.id}&type=ANIME`,
     },
     {
       key: "manga",
@@ -17,6 +19,7 @@ function Favorites({ favourites }) {
       nodes: favourites.manga?.nodes ?? [],
       getImage: (node) => node.coverImage?.large,
       getTitle: (node) => node.title?.english || node.title?.romaji,
+      getLink: (node) => `/Details?id=${node.id}&type=MANGA`,
     },
     {
       key: "characters",
@@ -65,10 +68,13 @@ function Favorites({ favourites }) {
             {section.nodes.map((node) => {
               const title = section.getTitle(node) || "Untitled";
               const image = section.getImage(node);
+              const link = section.getLink?.(node);
+              const CardTag = link ? Link : "div";
               return (
-                <div
+                <CardTag
                   key={`${section.key}-${node.id}`}
-                  className="favorite-card"
+                  className={`favorite-card${link ? " favorite-card--link" : ""}`}
+                  {...(link ? { to: link } : {})}
                 >
                   {image ? (
                     <img
@@ -82,8 +88,10 @@ function Favorites({ favourites }) {
                       {renderInitial(title)}
                     </div>
                   )}
-                  <p className="favorite-card-title">{title}</p>
-                </div>
+                  <p className="favorite-card-title" title={title}>
+                    {title}
+                  </p>
+                </CardTag>
               );
             })}
           </div>

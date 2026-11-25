@@ -9,6 +9,9 @@ import DetailsCharactersSection from "../components/Details/DetailsCharactersSec
 import DetailsStaffSection from "../components/Details/DetailsStaffSection.jsx";
 import "../css/Details.css";
 import { TrophySpin } from "react-loading-indicators";
+import PageState from "../components/PageState.jsx";
+import { isRateLimitError } from "../services/RateLimit.js";
+import { getApiErrorMessage } from "../utils/errorHandling.js";
 
 function Details() {
   const [searchParams] = useSearchParams();
@@ -33,24 +36,37 @@ function Details() {
   if (skipQuery) {
     return (
       <Box className="details-page">
-        <Box className="details-feedback error">
-          Unable to load media details without a valid identifier.
-        </Box>
+        <PageState
+          title="This link doesn't point to a title"
+          message="It's missing the title's ID or type. Find the title on Discover or with Search."
+          actions={[{ label: "Go to Discover", to: "/Discover" }]}
+        />
       </Box>
     );
   }
 
-  if (isInitialLoading)
+  const isRateLimited = isRateLimitError(error);
+
+  // While rate limited the overlay is up and refetches when it clears.
+  if (isInitialLoading || (isRateLimited && !media))
     return (
       <div className="loading-indicator">
         <TrophySpin color="var(--primary)" size="large" />
       </div>
     );
 
-  if (error) {
+  if (error && !isRateLimited && !media) {
     return (
       <Box className="details-page">
-        <Box className="details-feedback error">Error: {error.message}</Box>
+        <PageState
+          role="alert"
+          title="Couldn't load this title"
+          message={getApiErrorMessage(error, "Please try again in a moment.")}
+          actions={[
+            { label: "Try again", onClick: () => refetch() },
+            { label: "Go to Discover", to: "/Discover" },
+          ]}
+        />
       </Box>
     );
   }
@@ -58,9 +74,11 @@ function Details() {
   if (!media) {
     return (
       <Box className="details-page">
-        <Box className="details-feedback error">
-          Media not found. Please try another title.
-        </Box>
+        <PageState
+          title="Title not found"
+          message="AniList has no title with this ID. It may have been removed or merged."
+          actions={[{ label: "Go to Discover", to: "/Discover" }]}
+        />
       </Box>
     );
   }

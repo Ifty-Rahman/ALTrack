@@ -14,8 +14,4 @@ function MediaCardLink({ content }) {
   );
 }
 
-export function MediaCardSkeleton() {
-  return <div className="media-card-skeleton" aria-hidden="true" />;
-}
-
 export default MediaCardLink;

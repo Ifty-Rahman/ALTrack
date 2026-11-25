@@ -61,60 +61,6 @@
     font-variant-numeric: tabular-nums;
 }
 
-.browse-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
-    margin-bottom: 20px;
-}
-
-.browse-toolbar .toggle-group {
-    padding: 0;
-}
-
-.browse-tabs {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding: 4px 2px;
-}
-
-.browse-tabs::-webkit-scrollbar {
-    display: none;
-}
-
-.browse-tab {
-    flex-shrink: 0;
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--transparent);
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-decoration: none;
-    white-space: nowrap;
-    transition:
-        color 0.2s,
-        background-color 0.2s,
-        border-color 0.2s;
-}
-
-.browse-tab:hover {
-    color: var(--text);
-    border-color: var(--primary);
-}
-
-.browse-tab.is-active {
-    color: var(--text);
-    background: var(--primary);
-    border-color: var(--primary);
-    font-weight: 600;
-}
-
-.browse-tab:focus-visible,
 .browse-back:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
@@ -169,12 +115,5 @@
     }
     .browse-subtitle {
         font-size: 0.85rem;
-    }
-    .browse-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .browse-toolbar .toggle-group {
-        align-self: center;
     }
 }

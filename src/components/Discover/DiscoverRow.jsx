@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
-import MediaCardLink, { MediaCardSkeleton } from "../MediaCardLink.jsx";
+import MediaCardLink from "../MediaCardLink.jsx";
 
-const SKELETON_COUNT = 10;
-
-function DiscoverRow({ title, subtitle, browseUrl, media, loading }) {
+function DiscoverRow({ title, subtitle, browseUrl, media }) {
   const trackRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -32,7 +30,7 @@ function DiscoverRow({ title, subtitle, browseUrl, media, loading }) {
     node.scrollBy({ left: direction * node.clientWidth * 0.85, behavior: "smooth" });
   };
 
-  if (!loading && (!media || media.length === 0)) return null;
+  if (!media || media.length === 0) return null;
 
   return (
     <section className="discover-row">
@@ -64,17 +62,11 @@ function DiscoverRow({ title, subtitle, browseUrl, media, loading }) {
         </button>
 
         <div className="discover-row__track" ref={trackRef} onScroll={updateScrollState}>
-          {loading
-            ? Array.from({ length: SKELETON_COUNT }, (_, index) => (
-                <div className="discover-row__item" key={index}>
-                  <MediaCardSkeleton />
-                </div>
-              ))
-            : media.map((content) => (
-                <div className="discover-row__item" key={content.id}>
-                  <MediaCardLink content={content} />
-                </div>
-              ))}
+          {media.map((content) => (
+            <div className="discover-row__item" key={content.id}>
+              <MediaCardLink content={content} />
+            </div>
+          ))}
         </div>
 
         <button

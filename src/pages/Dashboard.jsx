@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@apollo/client/react";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.js";
 import "../css/Dashboard.css";
 import { GET_CURRENT_MEDIA, GET_CURRENT_USER } from "../services/Queries.jsx";
@@ -7,19 +7,23 @@ import {
   UPDATE_ANIME_ENTRY,
   UPDATE_MANGA_ENTRY,
 } from "../services/Mutation.jsx";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { TrophySpin } from "react-loading-indicators";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import MediaTypeToggle from "../components/MediaTypeToggle.jsx";
+import PageState from "../components/PageState.jsx";
+import SignedOutState from "../components/SignedOutState.jsx";
 import DashboardCard from "../components/Dashboard/DashboardCard.jsx";
 import DashboardEmptyState from "../components/Dashboard/DashboardEmptyState.jsx";
-import { toast } from "react-toastify";
 import { isRateLimitError } from "../services/RateLimit.js";
+import { getApiErrorMessage } from "../utils/errorHandling.js";
+import { normalizeType } from "../utils/discoverSections.js";
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const redirectToDiscover = () => navigate("/");
   const { authToken, login } = useAuth();
-  const [mediaType, setMediaType] = useState("ANIME");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mediaType = normalizeType(searchParams.get("type"));
+  const setMediaType = (type) =>
+    setSearchParams(type === "ANIME" ? {} : { type }, { replace: true });
   useEffect(() => {
     const hash = window.location.hash;
     if (hash) {
@@ -38,7 +42,7 @@ function Dashboard() {
   });
   const username = viewerData?.Viewer?.name;
 
-  const { loading, error, data } = useQuery(GET_CURRENT_MEDIA, {
+  const { loading, error, data, refetch } = useQuery(GET_CURRENT_MEDIA, {
     variables: { userName: username, type: mediaType },
     skip: !authToken || !username,
     fetchPolicy: "cache-first",
@@ -73,74 +77,57 @@ function Dashboard() {
     },
   });
 
+  if (!authToken) {
+    return <SignedOutState message="Log in with your AniList account to track what you're watching and reading." />;
+  }
+
   if (loading)
     return (
       <div className="loading-indicator">
         <TrophySpin color="var(--primary)" size="large" />
       </div>
     );
-  if (error) {
-    if (isRateLimitError(error)) return null;
-    return toast.error(`${error?.message || "Error occurred"}, try again later`);
-  }
 
   const entries = data?.MediaListCollection?.lists?.[0]?.entries || [];
   const scoreFormat = data?.User?.mediaListOptions?.scoreFormat;
   const hasEntries = entries.length > 0;
+  const typeLabel = mediaType === "ANIME" ? "anime" : "manga";
+
+  let content = null;
+  if (error && !isRateLimitError(error)) {
+    content = (
+      <PageState
+        role="alert"
+        title="Couldn't load your dashboard"
+        message={getApiErrorMessage(error, "Please try again in a moment.")}
+        actions={[{ label: "Try again", onClick: () => refetch() }]}
+      />
+    );
+  } else if (data && hasEntries) {
+    content = (
+      <div className="dashboard-grid">
+        {entries.map((entry) => (
+          <DashboardCard
+            key={entry.id}
+            entry={entry}
+            mediaType={mediaType}
+            scoreFormat={scoreFormat}
+            updateAnimeEntry={updateAnimeEntry}
+            updateMangaEntry={updateMangaEntry}
+          />
+        ))}
+      </div>
+    );
+  } else if (data) {
+    content = <DashboardEmptyState typeLabel={typeLabel} mediaType={mediaType} />;
+  }
 
   return (
-    <div>
-      {authToken ? (
-        <div className="dashboard-container">
-          <div className="dashboard-toggle">
-            <ToggleButtonGroup
-              className="toggle-group"
-              value={mediaType}
-              exclusive
-              color="white"
-              onChange={(e, value) => {
-                if (value) setMediaType(value);
-              }}
-            >
-              <ToggleButton
-                className="toggle-anime"
-                value="ANIME"
-                aria-label="anime"
-              >
-                Anime
-              </ToggleButton>
-              <ToggleButton
-                className="toggle-manga"
-                value="MANGA"
-                aria-label="manga"
-              >
-                Manga
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </div>
-
-          {!loading && data && hasEntries ? (
-            <div className="dashboard-grid">
-              {entries.map((entry) => (
-                <DashboardCard
-                  key={entry.id}
-                  entry={entry}
-                  mediaType={mediaType}
-                  scoreFormat={scoreFormat}
-                  updateAnimeEntry={updateAnimeEntry}
-                  updateMangaEntry={updateMangaEntry}
-                />
-              ))}
-            </div>
-          ) : !loading && data ? (
-            <DashboardEmptyState onRedirectToDiscover={redirectToDiscover} />
-          ) : null}
-        </div>
-      ) : (
-        <div className="Not-Logged-In">
-          <p>Please log in to see dashboard</p>
-        </div>
-      )}
+    <div className="dashboard-container">
+      <div className="dashboard-toggle">
+        <MediaTypeToggle value={mediaType} onChange={setMediaType} />
+      </div>
+      {content}
     </div>
   );
 }

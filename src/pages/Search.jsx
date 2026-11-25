@@ -1,57 +1,81 @@
-import { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client/react";
 import { useSearchParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import { GET_SEARCH_DATA } from "../services/Queries.jsx";
-import ContentCard from "../components/Contentcard.jsx";
-import { TrophySpin } from "react-loading-indicators";
+import MediaCardLink from "../components/MediaCardLink.jsx";
+import PageLoader from "../components/PageLoader.jsx";
+import PageState from "../components/PageState.jsx";
+import { isRateLimitError } from "../services/RateLimit.js";
+import { getApiErrorMessage } from "../utils/errorHandling.js";
+import { normalizeType } from "../utils/discoverSections.js";
 import "../css/Search.css";
 
-function Search() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const query = searchParams.get("query") || "";
-  const type = (searchParams.get("type") || "anime").toUpperCase();
+const RESULT_COUNT = 30;
 
-  const { loading, error, data } = useQuery(GET_SEARCH_DATA, {
-    variables: {
-      page: 1,
-      perPage: 15,
-      search: query,
-      type: type,
-    },
+function Search() {
+  const [searchParams] = useSearchParams();
+  const query = (searchParams.get("query") || "").trim();
+  const type = normalizeType((searchParams.get("type") || "").toUpperCase());
+  const typeLabel = type === "ANIME" ? "anime" : "manga";
+  const otherType = type === "ANIME" ? "Manga" : "Anime";
+
+  const { loading, error, data, refetch } = useQuery(GET_SEARCH_DATA, {
+    variables: { page: 1, perPage: RESULT_COUNT, search: query, type },
+    skip: !query,
   });
 
-  const [searchResults, setSearchResults] = useState([]);
-
-  useEffect(() => {
-    if (data) {
-      setSearchResults(data?.Page?.media);
-    }
-  }, [data]);
-
-  if (loading)
+  if (!query) {
     return (
-      <div className="loading-indicator">
-        <TrophySpin color="var(--primary)" size="large" />
+      <div className="search-results">
+        <PageState
+          title={`Search for ${typeLabel}`}
+          message="Type a title in the search bar at the top to find it."
+          actions={[{ label: "Browse Discover instead", to: "/Discover" }]}
+        />
       </div>
     );
-  if (error) return <p className="error-msg">Error: {error.message}</p>;
+  }
 
-  const handleCardClick = (content) => {
-    navigate(`/Details?id=${content.id}&type=${content.type}`);
-  };
+  const results = data?.Page?.media ?? [];
+  const isWaiting = loading || isRateLimitError(error);
+  const hardError = error && !isRateLimitError(error);
+
+  let body;
+  if (hardError) {
+    body = (
+      <PageState
+        role="alert"
+        title="Search failed"
+        message={getApiErrorMessage(error, "Please try again in a moment.")}
+        actions={[{ label: "Try again", onClick: () => refetch() }]}
+      />
+    );
+  } else if (isWaiting && !data) {
+    body = <PageLoader inline />;
+  } else if (results.length === 0) {
+    const params = new URLSearchParams({ query, type: otherType });
+    body = (
+      <PageState
+        title={`No ${typeLabel} matches "${query}"`}
+        message="Check the spelling, try the Japanese or English title, or search the other type."
+        actions={[{ label: `Search ${otherType.toLowerCase()} instead`, to: `/Search?${params}` }]}
+      />
+    );
+  } else {
+    body = (
+      <div className="search-grid">
+        {results.map((content) => (
+          <MediaCardLink key={content.id} content={content} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="search-results">
-      <h2 className="search-title">Showing results for "{query}"</h2>
-      <div className="search-grid">
-        {searchResults.map((content) => (
-          <div key={content.id} onClick={() => handleCardClick(content)}>
-            <ContentCard content={content} />
-          </div>
-        ))}
-      </div>
+      <h1 className="search-title">
+        {typeLabel === "anime" ? "Anime" : "Manga"} results for “{query}”
+      </h1>
+      {body}
     </div>
   );
 }

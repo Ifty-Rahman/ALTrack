@@ -1,16 +1,16 @@
-function DashboardEmptyState({ onRedirectToDiscover }) {
+import PageState from "../PageState.jsx";
+
+function DashboardEmptyState({ typeLabel, mediaType }) {
+  const verb = mediaType === "MANGA" ? "reading" : "watching";
   return (
-    <div className="dashboard-empty-state">
-      <p>
-        Nothing here yet. Discover new titles or use Search to add anime and
-        manga to your list.
-      </p>
-      <div className="dashboard-empty-actions">
-        <button type="button" onClick={onRedirectToDiscover}>
-          Go to Discover
-        </button>
-      </div>
-    </div>
+    <PageState
+      title={`You're not ${verb} any ${typeLabel} right now`}
+      message={`Titles you mark as currently ${verb} on AniList show up here, so you can update progress and scores quickly.`}
+      actions={[
+        { label: "Find something on Discover", to: mediaType === "ANIME" ? "/Discover" : `/Discover?type=${mediaType}` },
+        { label: "Open your lists", to: mediaType === "ANIME" ? "/Userlist" : `/Userlist?type=${mediaType}` },
+      ]}
+    />
   );
 }
 

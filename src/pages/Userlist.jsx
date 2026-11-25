@@ -1,27 +1,31 @@
-import { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client/react";
-import { Link, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.js";
 import { GET_CURRENT_USER, GET_USER_MEDIA_LIST } from "../services/Queries.jsx";
 import { TrophySpin } from "react-loading-indicators";
 import "../css/Userlist.css";
 import UserListGrid from "../components/Userlist/UserListGrid.jsx";
 import UserListSelect from "../components/Userlist/UserListSelect.jsx";
-import UserListToggleGroup from "../components/Userlist/UserListToggleGroup.jsx";
+import MediaTypeToggle from "../components/MediaTypeToggle.jsx";
+import PageState from "../components/PageState.jsx";
+import SignedOutState from "../components/SignedOutState.jsx";
+import { isRateLimitError } from "../services/RateLimit.js";
+import { getApiErrorMessage } from "../utils/errorHandling.js";
+import { normalizeType } from "../utils/discoverSections.js";
 
-const DEFAULT_LIST_NAME = "Planning";
-const NORMALIZED_DEFAULT_NAME = DEFAULT_LIST_NAME.toLowerCase();
+const DEFAULT_LIST_NAME = "planning";
 
 function UserList() {
-  const navigate = useNavigate();
   const { authToken } = useAuth();
-  const [mediaType, setMediaType] = useState("ANIME");
-  const [selectedListName, setSelectedListName] = useState(DEFAULT_LIST_NAME);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mediaType = normalizeType(searchParams.get("type"));
+  const requestedList = searchParams.get("list");
 
   const {
     loading: userLoading,
     error: userError,
     data: userData,
+    refetch: refetchUser,
   } = useQuery(GET_CURRENT_USER, {
     skip: !authToken,
   });
@@ -32,137 +36,100 @@ function UserList() {
     loading: listsLoading,
     error: listsError,
     data,
+    refetch,
   } = useQuery(GET_USER_MEDIA_LIST, {
     variables: { userName: username },
     skip: !authToken || !username,
     fetchPolicy: "cache-first",
   });
 
-  const isAnime = mediaType === "ANIME";
-  const animeLists = data?.anime?.lists || [];
-  const mangaLists = data?.manga?.lists || [];
-  const activeLists = isAnime ? animeLists : mangaLists;
-  const listOptions = activeLists
-    .map((list) => list.name)
-    .filter((name) => Boolean(name));
+  if (!authToken) {
+    return <SignedOutState message="Log in with your AniList account to see your anime and manga lists." />;
+  }
 
-  useEffect(() => {
-    if (!activeLists.length) {
-      if (selectedListName !== DEFAULT_LIST_NAME) {
-        setSelectedListName(DEFAULT_LIST_NAME);
-      }
-      return;
-    }
+  const activeError = userError || listsError;
+  const isRateLimited = isRateLimitError(activeError);
 
-    const nextDefault = activeLists.find(
-      (list) => list.name?.toLowerCase() === NORMALIZED_DEFAULT_NAME,
-    );
-    const fallbackName =
-      nextDefault?.name ?? activeLists[0]?.name ?? DEFAULT_LIST_NAME;
-    const hasSelected = activeLists.some(
-      (list) => list.name === selectedListName,
-    );
-
-    if (!hasSelected) {
-      setSelectedListName(fallbackName);
-    } else if (
-      selectedListName?.toLowerCase() === NORMALIZED_DEFAULT_NAME &&
-      !nextDefault
-    ) {
-      setSelectedListName(fallbackName);
-    }
-  }, [activeLists, selectedListName]);
-
-  const defaultList = activeLists.find(
-    (list) => list.name?.toLowerCase() === NORMALIZED_DEFAULT_NAME,
-  );
-
-  const selectedList =
-    activeLists.find((list) => list.name === selectedListName) ??
-    defaultList ??
-    activeLists[0];
-  const selectedEntries = selectedList?.entries ?? [];
-  const hasLists = activeLists.length > 0;
-  const hasSelectedEntries = selectedEntries.length > 0;
-  const selectedListDisplayName = selectedList?.name ?? selectedListName;
-
-  if (userLoading || listsLoading)
+  // While rate limited the overlay is up and refetches when it clears.
+  if (userLoading || listsLoading || (isRateLimited && !data))
     return (
       <div className="loading-indicator">
         <TrophySpin color="var(--primary)" size="large" />
       </div>
     );
 
-  const activeError = userError || listsError;
+  if (activeError && !isRateLimited) {
+    return (
+      <div className="anime-list-container">
+        <PageState
+          role="alert"
+          title="Couldn't load your lists"
+          message={getApiErrorMessage(activeError, "Please try again in a moment.")}
+          actions={[{ label: "Try again", onClick: () => (userError ? refetchUser() : refetch()) }]}
+        />
+      </div>
+    );
+  }
 
-  if (userError || listsError)
-    return <p>Error: {activeError?.message || "Unable to load lists."}</p>;
+  const isAnime = mediaType === "ANIME";
+  const typeLabel = isAnime ? "anime" : "manga";
+  const activeLists = ((isAnime ? data?.anime?.lists : data?.manga?.lists) ?? []).filter(
+    (list) => Boolean(list.name),
+  );
 
-  const handleCardClick = (media) => {
-    const targetType = media.type || mediaType;
-    navigate(`/Details?id=${media.id}&type=${targetType}`);
+  // The URL's list wins, then "Planning", then whatever list exists first.
+  const selectedList =
+    activeLists.find((list) => list.name === requestedList) ??
+    activeLists.find((list) => list.name.toLowerCase() === DEFAULT_LIST_NAME) ??
+    activeLists[0];
+  const selectedEntries = selectedList?.entries ?? [];
+  const discoverUrl = isAnime ? "/Discover" : `/Discover?type=${mediaType}`;
+
+  const updateParams = (type, list) => {
+    const params = new URLSearchParams();
+    if (type !== "ANIME") params.set("type", type);
+    if (list) params.set("list", list);
+    setSearchParams(params, { replace: true });
   };
 
+  let content;
+  if (!activeLists.length) {
+    content = (
+      <PageState
+        title={`No ${typeLabel} lists yet`}
+        message={`Add ${typeLabel} from Discover or Search and your lists will show up here.`}
+        actions={[{ label: "Go to Discover", to: discoverUrl }]}
+      />
+    );
+  } else if (!selectedEntries.length) {
+    content = (
+      <PageState
+        title={`"${selectedList.name}" is empty`}
+        message={`Pick another list above, or find new ${typeLabel} on Discover.`}
+        actions={[{ label: "Go to Discover", to: discoverUrl }]}
+      />
+    );
+  } else {
+    content = <UserListGrid entries={selectedEntries} isAnime={isAnime} fallbackType={mediaType} />;
+  }
+
   return (
-    <div>
-      {authToken ? (
-        <div className="anime-list-container">
-          <div className="userlist-header">
-            <UserListToggleGroup
-              className="userlist-toggle-group"
-              value={mediaType}
-              onChange={(_, value) => {
-                if (value) {
-                  setMediaType(value);
-                  setSelectedListName(DEFAULT_LIST_NAME);
-                }
-              }}
-            />
-            {listOptions.length > 0 && (
-              <UserListSelect
-                className="userlist-select"
-                value={selectedListName}
-                options={listOptions}
-                onChange={(event) => setSelectedListName(event.target.value)}
-              />
-            )}
-          </div>
-          {hasLists ? (
-            hasSelectedEntries ? (
-              <UserListGrid
-                entries={selectedEntries}
-                isAnime={isAnime}
-                onCardClick={handleCardClick}
-              />
-            ) : (
-              <div className="userlist-empty">
-                <p>
-                  {selectedListDisplayName
-                    ? `No entries in "${selectedListDisplayName}" yet.`
-                    : "No entries in this list yet."}
-                </p>
-                <div className="userlist-empty-actions">
-                  <Link to="/">Go to Discover</Link>
-                </div>
-              </div>
-            )
-          ) : (
-            <div className="userlist-empty">
-              <p>
-                You don&apos;t have any {isAnime ? "anime" : "manga"} here yet.
-                Visit Discover or Search to add some titles to your lists.
-              </p>
-              <div className="userlist-empty-actions">
-                <Link to="/">Go to Discover</Link>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="Not-Logged-In">
-          <p>Please log in with you Anilist account to see your lists</p>
-        </div>
-      )}
+    <div className="anime-list-container">
+      <div className="userlist-header">
+        <MediaTypeToggle value={mediaType} onChange={(type) => updateParams(type, null)} />
+        {activeLists.length > 0 && (
+          <UserListSelect
+            className="userlist-select"
+            value={selectedList.name}
+            options={activeLists.map((list) => ({
+              value: list.name,
+              label: `${list.name} (${list.entries?.length ?? 0})`,
+            }))}
+            onChange={(event) => updateParams(mediaType, event.target.value)}
+          />
+        )}
+      </div>
+      {content}
     </div>
   );
 }

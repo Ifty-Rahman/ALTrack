@@ -10,39 +10,7 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-}
-
-.userlist-toggle {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin: 0;
-}
-
-.userlist-toggle-group .MuiToggleButton-root {
-    color: var(--text) !important;
-    background-color: var(--transparent-less) !important;
-    border: none !important;
-    font-weight: 500;
-    text-transform: none;
-    padding: 6px 18px;
-    transition: all 0.2s ease;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.userlist-toggle-group .MuiToggleButton-root.Mui-selected {
-    color: var(--text) !important;
-    background-color: var(--primary) !important;
-    font-weight: 600;
-}
-
-.userlist-toggle-group .MuiToggleButton-root:hover {
-    background-color: var(--transparent-less) !important;
-}
-
-.userlist-toggle-group .MuiToggleButton-root.Mui-selected:hover {
-    background-color: var(--hover) !important;
+    gap: 12px;
 }
 
 .anime-grid-list {
@@ -75,6 +43,9 @@
     position: relative;
     padding: 0;
     cursor: pointer;
+    background-color: var(--transparent-less);
+    color: inherit;
+    text-decoration: none;
 }
 
 .anime-card-title {
@@ -92,6 +63,8 @@
     background: var(--transparent);
     z-index: 2;
     box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -107,6 +80,11 @@
 
 .anime-info-list p {
     margin: 4px 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.anime-info-muted {
+    color: var(--text-secondary);
 }
 
 .anime-card-list:hover {
@@ -145,7 +123,7 @@
 }
 
 .userlist-select .MuiSelect-select:focus {
-    background-color: rgba(110, 53, 255, 0.15);
+    background-color: rgba(4, 107, 217, 0.15);
 }
 
 .userlist-select-menu {
@@ -162,53 +140,15 @@
     background-color: var(--primary) !important;
 }
 
-.userlist-empty {
-    margin: 40px auto 0;
-    padding: 32px 24px;
-    max-width: 480px;
-    text-align: center;
-    background: rgba(17, 25, 40, 0.4);
-    border: 1px solid rgba(110, 53, 255, 0.2);
-    border-radius: 24px;
-    color: var(--transparent);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
-}
-
-.userlist-empty-actions {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.userlist-empty-actions a {
-    padding: 10px 18px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-.userlist-empty-actions a:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-}
-
 @media (max-width: 768px) {
     .anime-grid-list {
-        grid-template-columns: repeat(3, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     }
 }
 
 @media (max-width: 480px) {
     .anime-grid-list {
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .anime-card-image {
         height: 240px;
@@ -224,7 +164,7 @@
 
 @media (max-width: 410px) {
     .anime-grid-list {
-        grid-template-columns: repeat(2, minmax(150px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .anime-card-image {
         height: 180px;

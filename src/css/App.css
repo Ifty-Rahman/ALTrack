@@ -18,16 +18,11 @@
 }
 
 .Not-Logged-In {
-    height: 90vh;
+    min-height: 70vh;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.Not-Logged-In p {
-    font-size: 1.5rem;
-    font-weight: 400;
-    margin: auto;
+    padding: 0 20px;
 }
 
 .loading-indicator {
@@ -36,6 +31,10 @@
     align-items: center;
     height: 80vh;
     width: 100vw;
+}
+
+.loading-indicator--inline {
+    width: 100%;
 }
 
 .error-msg {
@@ -66,4 +65,120 @@
         width: 240px;
         margin: 0 12px 12px auto;
     }
+}
+
+/* Keyboard focus, app-wide. Mouse clicks don't trigger :focus-visible. */
+a:focus-visible,
+button:focus-visible,
+[role="link"]:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Anime / Manga toggle (Dashboard, Discover, Browse, Lists). */
+.toggle-group {
+    border-radius: 12px;
+    padding: 6px;
+    gap: 6px;
+}
+
+.toggle-group .MuiToggleButton-root {
+    color: var(--text-secondary) !important;
+    background-color: var(--transparent) !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-weight: 500;
+    text-transform: none;
+    padding: 6px 16px;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.toggle-group .MuiToggleButton-root:hover {
+    color: var(--text) !important;
+    background-color: rgba(60, 57, 57, 0.7) !important;
+}
+
+.toggle-group .MuiToggleButton-root.Mui-selected {
+    color: var(--text) !important;
+    background-color: var(--primary) !important;
+    font-weight: 600;
+}
+
+.toggle-group .MuiToggleButton-root.Mui-selected:hover {
+    background-color: var(--hover) !important;
+}
+
+/* Empty, error and signed-out messages. */
+.page-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 40px auto;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 440px;
+    box-sizing: border-box;
+    text-align: center;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--transparent);
+    color: var(--text);
+}
+
+.page-state__title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.page-state__message {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.page-state__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.page-state__action {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 20px;
+    border: 1px solid var(--primary);
+    border-radius: 20px;
+    background: var(--primary);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+}
+
+.page-state__action:hover {
+    color: var(--text);
+    background: var(--hover);
+    border-color: var(--hover);
+}
+
+.page-state__action--secondary {
+    background: transparent;
+    border-color: var(--border);
+}
+
+.page-state__action--secondary:hover {
+    background: rgba(4, 107, 217, 0.2);
+    border-color: var(--primary);
 }

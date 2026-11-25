@@ -24,9 +24,9 @@ function UserListSelect({
           },
         }}
       >
-        {options.map((name) => (
-          <MenuItem key={name} value={name}>
-            {name}
+        {options.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
           </MenuItem>
         ))}
       </Select>

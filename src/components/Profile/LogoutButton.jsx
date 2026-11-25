@@ -12,20 +12,21 @@ function LogOut() {
     navigate("/");
   }
 
-  function handleGithub() {
-    window.open("https://github.com/Ifty-Rahman/ALTrack", "_blank");
-  }
-
   return (
     <div className="profile">
-      <button onClick={handleLogout} className="logout-btn">
-        <FiLogOut className="btn-icon" />
-        Logout
+      <button type="button" onClick={handleLogout} className="logout-btn">
+        <FiLogOut className="btn-icon" aria-hidden="true" />
+        Log out
       </button>
-      <button onClick={handleGithub} className="github-btn">
-        <FiGithub className="btn-icon" />
-        Github
-      </button>
+      <a
+        href="https://github.com/Ifty-Rahman/ALTrack"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="github-btn"
+      >
+        <FiGithub className="btn-icon" aria-hidden="true" />
+        GitHub
+      </a>
     </div>
   );
 }

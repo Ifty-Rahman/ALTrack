@@ -6,6 +6,7 @@ import { rateLimitLink } from "./services/RateLimit.js";
 import { smartRequestLink } from "./services/SmartRequestLink.js";
 import { createPersistenceLink, hydrateCache } from "./services/CachePersistence.js";
 import { typePolicies } from "./services/CachePolicies.js";
+import { redirectToLogin } from "./utils/auth.js";
 import RateLimitOverlay from "./components/RateLimitOverlay.jsx";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -31,7 +32,6 @@ import {
   MdHome,
 } from "react-icons/md";
 
-const loginUrl = `https://anilist.co/api/v2/oauth/authorize?client_id=${import.meta.env.VITE_ANILIST_CLIENT_ID}&response_type=token`;
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("anilist_token");
@@ -116,7 +116,7 @@ function DockWrapper() {
       : {
           label: "Login with AniList",
           icon: <MdLogin size={28} />,
-          onClick: () => (window.location.href = loginUrl),
+          onClick: redirectToLogin,
           className: "dock-item-login",
         },
   ];

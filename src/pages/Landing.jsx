@@ -12,8 +12,8 @@ import {
 import { CgDetailsMore } from "react-icons/cg";
 import { FaGithub } from "react-icons/fa";
 import "../css/Landing.css";
+import { LOGIN_URL } from "../utils/auth.js";
 
-const loginUrl = `https://anilist.co/api/v2/oauth/authorize?client_id=${import.meta.env.VITE_ANILIST_CLIENT_ID}&response_type=token`;
 
 function Landing() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ function Landing() {
     if (authToken) {
       navigate("/Dashboard");
     } else {
-      window.location.href = loginUrl;
+      window.location.href = LOGIN_URL;
     }
   };
 
