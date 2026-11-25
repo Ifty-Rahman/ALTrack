@@ -46,6 +46,7 @@ export const GET_DISCOVER_PAGE = gql`
     $seasonYear: Int
     $nextSeason: MediaSeason
     $nextYear: Int
+    $isAnime: Boolean!
   ) {
     trending: Page(page: 1, perPage: $perPage) {
       media(type: $type, sort: TRENDING_DESC) {
@@ -73,7 +74,7 @@ export const GET_DISCOVER_PAGE = gql`
         }
       }
     }
-    seasonal: Page(page: 1, perPage: $perPage) {
+    seasonal: Page(page: 1, perPage: $perPage) @include(if: $isAnime) {
       media(
         type: ANIME
         sort: POPULARITY_DESC
@@ -91,7 +92,7 @@ export const GET_DISCOVER_PAGE = gql`
         }
       }
     }
-    upcoming: Page(page: 1, perPage: $perPage) {
+    upcoming: Page(page: 1, perPage: $perPage) @include(if: $isAnime) {
       media(
         type: ANIME
         sort: POPULARITY_DESC
@@ -109,22 +110,17 @@ export const GET_DISCOVER_PAGE = gql`
         }
       }
     }
-    manhwa: Page(page: 1, perPage: $perPage) {
+    manhwa: Page(page: 1, perPage: $perPage) @skip(if: $isAnime) {
       media(type: MANGA, countryOfOrigin: KR, sort: POPULARITY_DESC) {
         id
         type
         title {
-          romaji
           english
-          native
+          romaji
         }
         coverImage {
           large
-          medium
         }
-        popularity
-        status
-        genres
       }
     }
   }
@@ -235,22 +231,18 @@ export const GET_POPULAR_MANHWA = gql`
         currentPage
         lastPage
         hasNextPage
+        perPage
       }
       media(type: MANGA, countryOfOrigin: KR, sort: POPULARITY_DESC) {
         id
         type
         title {
-          romaji
           english
-          native
+          romaji
         }
         coverImage {
           large
-          medium
         }
-        popularity
-        status
-        genres
       }
     }
   }

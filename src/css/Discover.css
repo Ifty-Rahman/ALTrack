@@ -1,44 +1,20 @@
 .discover {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
     margin-bottom: 10px;
 }
 
-.content-grid {
-    display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    padding: 10px 20px;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-}
-
-.content-grid::-webkit-scrollbar {
-    display: none;
-}
-
-.content-grid > * {
-    flex: 0 0 auto;
-    width: 180px;
-}
-
-.button-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.button-row button {
-    color: var(--text);
-    font-weight: 600;
-}
-
-.discover-toggle {
+.discover-toolbar {
     display: flex;
     justify-content: center;
+    padding-top: 4px;
 }
 
 .toggle-group {
     border-radius: 12px;
     padding: 6px;
+    gap: 6px;
 }
 
 .toggle-group .MuiToggleButton-root {
@@ -49,7 +25,7 @@
     text-transform: none;
     padding: 6px 16px;
     transition: all 0.2s ease;
-    border-radius: 20px;
+    border-radius: 20px !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
@@ -66,6 +42,214 @@
 .toggle-group .MuiToggleButton-root.Mui-selected:hover {
     background-color: var(--hover) !important;
 }
+
+/* Row */
+
+.discover-row__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 0 20px 10px;
+}
+
+.discover-row__title {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    min-width: 0;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.discover-row__title h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    transition: color 0.2s;
+}
+
+.discover-row__title:hover h2 {
+    color: var(--primary);
+}
+
+.discover-row__subtitle {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.discover-row__view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding: 6px 8px 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--transparent);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+}
+
+.discover-row__view-all:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.discover-row__title:focus-visible,
+.discover-row__view-all:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 20px;
+}
+
+.discover-row__viewport {
+    position: relative;
+}
+
+.discover-row__track {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 10px 20px 14px;
+    scroll-padding: 0 20px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+}
+
+.discover-row__track::-webkit-scrollbar {
+    display: none;
+}
+
+.discover-row__item {
+    flex: 0 0 180px;
+    scroll-snap-align: start;
+}
+
+.discover-row__arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--transparent);
+    color: var(--text);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition:
+        opacity 0.2s,
+        background-color 0.2s;
+    cursor: pointer;
+}
+
+.discover-row__arrow--left {
+    left: 8px;
+}
+
+.discover-row__arrow--right {
+    right: 8px;
+}
+
+.discover-row__arrow:hover {
+    background: var(--primary);
+    color: var(--text);
+}
+
+.discover-row__viewport.can-scroll-left:hover .discover-row__arrow--left,
+.discover-row__viewport.can-scroll-right:hover .discover-row__arrow--right,
+.discover-row__arrow:focus-visible:not(:disabled) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Fade the edge a row can still scroll toward. */
+.discover-row__viewport::before,
+.discover-row__viewport::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    width: 48px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.discover-row__viewport::before {
+    left: 0;
+    background: linear-gradient(to right, #000, transparent);
+}
+
+.discover-row__viewport::after {
+    right: 0;
+    background: linear-gradient(to left, #000, transparent);
+}
+
+.discover-row__viewport.can-scroll-left::before,
+.discover-row__viewport.can-scroll-right::after {
+    opacity: 0.85;
+}
+
+/* Empty / error state */
+
+.discover-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 40px auto;
+    padding: 28px 24px;
+    max-width: 420px;
+    text-align: center;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--transparent);
+}
+
+.discover-state__title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.discover-state__message {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.discover-state__action {
+    margin-top: 8px;
+    padding: 8px 20px;
+    border-radius: 20px;
+    background: var(--primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.discover-state__action:hover {
+    color: var(--text);
+    background: var(--hover);
+}
+
+/* Shared button base (also used by other pages). */
 
 button {
     --arrow-width: 10px;
@@ -122,17 +306,45 @@ button:hover .arrow:before {
     right: 0;
 }
 
+/* Touch devices scroll natively; hide the arrow buttons. */
+@media (hover: none) {
+    .discover-row__arrow {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
-    .button-row button {
-        font-size: 1.1rem;
-        padding: 8px 20px;
+    .discover {
+        gap: 22px;
+    }
+    .discover-row__header {
+        padding: 0 15px 6px;
+    }
+    .discover-row__title h2 {
+        font-size: 1.15rem;
+    }
+    .discover-row__track {
+        gap: 15px;
+        padding: 8px 15px 12px;
+        scroll-padding: 0 15px;
+    }
+    .discover-row__item {
+        flex-basis: 150px;
+    }
+    .discover-row__viewport::before,
+    .discover-row__viewport::after {
+        width: 24px;
     }
     button {
         --arrow-stroke: 2px;
     }
 }
+
 @media (max-width: 480px) {
     .discover {
         margin-bottom: 0;
+    }
+    .discover-row__subtitle {
+        font-size: 0.8rem;
     }
 }

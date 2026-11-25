@@ -43,7 +43,7 @@ function RateLimitOverlay() {
     refetchingRef.current = true;
     clearRateLimit();
     startedAtRef.current = null;
-    client.reFetchObservableQueries().finally(() => {
+    client.refetchObservableQueries().finally(() => {
       refetchingRef.current = false;
     });
   }, [expiresAt, now, client]);

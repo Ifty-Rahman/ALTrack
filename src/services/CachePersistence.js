@@ -1,7 +1,8 @@
 import { ApolloLink, Observable } from "@apollo/client";
 
-export const CACHE_STORAGE_KEY = "altrack:apollo-cache-v1";
+export const CACHE_STORAGE_KEY = "altrack:apollo-cache-v2";
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const LEGACY_STORAGE_KEYS = ["altrack:apollo-cache-v1"];
 
 let hydrated = false;
 
@@ -9,6 +10,7 @@ export function hydrateCache(cache, ttlMs = CACHE_TTL_MS) {
   if (hydrated) return cache;
   hydrated = true;
   try {
+    LEGACY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
     const raw = localStorage.getItem(CACHE_STORAGE_KEY);
     if (!raw) return cache;
     const snapshot = JSON.parse(raw);
@@ -45,8 +47,6 @@ export function createPersistenceLink(cache) {
     new Observable((observer) => {
       const subscription = forward(operation).subscribe({
         next: (response) => {
-          // Cache writes happen synchronously while the QueryManager consumes
-          // this result, so defer the snapshot to the next macrotask.
           setTimeout(scheduleSave, 0);
           observer.next(response);
         },

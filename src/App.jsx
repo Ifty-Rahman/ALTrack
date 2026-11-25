@@ -5,6 +5,7 @@ import { setContext } from "@apollo/client/link/context";
 import { rateLimitLink } from "./services/RateLimit.js";
 import { smartRequestLink } from "./services/SmartRequestLink.js";
 import { createPersistenceLink, hydrateCache } from "./services/CachePersistence.js";
+import { typePolicies } from "./services/CachePolicies.js";
 import RateLimitOverlay from "./components/RateLimitOverlay.jsx";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -44,11 +45,7 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const clientCache = new InMemoryCache({
-  typePolicies: {
-    Page: { keyFields: false },
-  },
-});
+const clientCache = new InMemoryCache({ typePolicies });
 hydrateCache(clientCache);
 
 const client = new ApolloClient({

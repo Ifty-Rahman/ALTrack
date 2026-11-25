@@ -6,6 +6,7 @@
         box-shadow 0.2s ease;
     cursor: default;
     position: relative;
+    background-color: var(--transparent-less);
 }
 
 .content-card img {
@@ -17,6 +18,13 @@
     align-items: flex-end;
     position: relative;
     padding: 0;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.content-card img.is-loaded {
+    opacity: 1;
 }
 
 .content-card h3 {
